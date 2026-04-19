@@ -2,6 +2,13 @@
 
 class WPB2EL_Parser {
 
+    // Tags that never have a closing [/tag] — add directly to parent
+    private static array $self_closing = [
+        'vc_single_image', 'vc_text_separator', 'vc_separator',
+        'vc_empty_space', 'vc_btn', 'vc_video', 'vc_icon',
+        'vc_progress_bar', 'vc_cta',
+    ];
+
     public function parse( string $content ): array {
         $content = trim( $content );
         if ( empty( $content ) ) return [];
@@ -29,7 +36,7 @@ class WPB2EL_Parser {
 
     private function build_tree( array $tokens ): array {
         $result = [];
-        $stack = [];
+        $stack  = [];
 
         foreach ( $tokens as $token ) {
             if ( $token['type'] === 'open' ) {
@@ -37,17 +44,43 @@ class WPB2EL_Parser {
                     'tag'      => $token['tag'],
                     'attrs'    => $token['attrs'],
                     'content'  => '',
-                    'children' => []
+                    'children' => [],
                 ];
-                array_push( $stack, $node );
-            } elseif ( $token['type'] === 'close' ) {
-                if ( ! empty( $stack ) ) {
-                    $node = array_pop( $stack );
-                    if ( empty( $stack ) ) {
-                        $result[] = $node;
-                    } else {
+                if ( in_array( $token['tag'], self::$self_closing, true ) ) {
+                    // Self-closing: add directly to current parent, never push to stack
+                    if ( ! empty( $stack ) ) {
                         $stack[ count( $stack ) - 1 ]['children'][] = $node;
+                    } else {
+                        $result[] = $node;
                     }
+                } else {
+                    array_push( $stack, $node );
+                }
+            } elseif ( $token['type'] === 'close' ) {
+                if ( empty( $stack ) ) continue;
+
+                // Find the matching open tag anywhere in the stack
+                $found = -1;
+                for ( $i = count( $stack ) - 1; $i >= 0; $i-- ) {
+                    if ( $stack[ $i ]['tag'] === $token['tag'] ) {
+                        $found = $i;
+                        break;
+                    }
+                }
+                if ( $found === -1 ) continue; // No matching open tag — ignore
+
+                // Collapse any unclosed tags above the match into their parent
+                while ( count( $stack ) - 1 > $found ) {
+                    $orphan = array_pop( $stack );
+                    $stack[ count( $stack ) - 1 ]['children'][] = $orphan;
+                }
+
+                // Pop the matched node
+                $node = array_pop( $stack );
+                if ( empty( $stack ) ) {
+                    $result[] = $node;
+                } else {
+                    $stack[ count( $stack ) - 1 ]['children'][] = $node;
                 }
             } elseif ( $token['type'] === 'text' ) {
                 if ( ! empty( $stack ) ) {
@@ -57,36 +90,27 @@ class WPB2EL_Parser {
                         'tag'      => '__text__',
                         'attrs'    => [],
                         'content'  => $token['content'],
-                        'children' => []
+                        'children' => [],
                     ];
                 }
             }
         }
 
-        // Flush any unclosed frames to result
-        while ( count( $stack ) > 1 ) {
-            $frame = array_pop( $stack );
-            $top   = array_pop( $stack );
-            if ( ! is_array( $top ) ) $top = [];
-            if ( isset( $frame['node'] ) ) {
-                $frame['node']['children'] = [];
-                $top[] = $frame['node'];
-            } elseif ( is_array( $frame ) ) {
-                $top = array_merge( $top, array_values( $frame ) );
+        // Flush remaining unclosed nodes bottom-up
+        while ( ! empty( $stack ) ) {
+            $node = array_pop( $stack );
+            if ( empty( $stack ) ) {
+                $result[] = $node;
+            } else {
+                $stack[ count( $stack ) - 1 ]['children'][] = $node;
             }
-            array_push( $stack, $top );
         }
 
-        // Return result, plus any remaining unclosed nodes from the stack
-        if ( ! empty( $stack ) && isset( $stack[0]['tag'] ) ) {
-            $result[] = $stack[0];
-        }
         return $result;
     }
 
     private function parse_attrs( string $attr_string ): array {
         $attrs = [];
-        // Match name="value", name='value', or name=value (unquoted)
         preg_match_all( '/(\w+)=(?:"([^"]*)"|\'([^\']*)\'|(\S+))/', $attr_string, $matches, PREG_SET_ORDER );
         foreach ( $matches as $m ) {
             $attrs[ $m[1] ] = $m[2] !== '' ? $m[2] : ( $m[3] !== '' ? $m[3] : $m[4] );

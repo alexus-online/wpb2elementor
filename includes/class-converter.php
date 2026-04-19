@@ -83,13 +83,11 @@ class WPB2EL_Converter {
         if ( $mapped['elType'] === 'container' ) {
             $is_inner = $mapped['isInner'] ?? false;
             if ( ! $is_inner ) {
-                // Outer container (replaces vc_row): horizontal flex row
-                $settings['flex_direction']  = 'row';
-                $settings['content_width']   = 'full';
-                $settings['flex_wrap']       = 'nowrap';
-                $settings['align_items']     = 'stretch';
+                $settings['flex_direction'] = 'row';
+                $settings['content_width']  = 'full';
+                $settings['flex_wrap']      = 'nowrap';
+                $settings['align_items']    = 'stretch';
             } else {
-                // Inner container (replaces vc_column): vertical flex column
                 $settings['flex_direction'] = 'column';
                 if ( isset( $attrs['width'] ) ) {
                     $pct = $this->vc_width_to_percent( $attrs['width'] );
@@ -101,9 +99,26 @@ class WPB2EL_Converter {
             }
         }
 
-        if ( ( $mapped['widgetType'] ?? '' ) === 'heading' && isset( $attrs['text'] ) ) {
-            $settings['title'] = $attrs['text'];
+        $widget_type = $mapped['widgetType'] ?? '';
+
+        // Heading: title from 'text' or 'title' attr
+        if ( $widget_type === 'heading' ) {
+            $settings['title'] = $attrs['text'] ?? $attrs['title'] ?? '';
         }
+
+        // Image: pass attachment ID and optional link
+        if ( $widget_type === 'image' && isset( $attrs['image'] ) ) {
+            $settings['image'] = [ 'id' => (int) $attrs['image'], 'url' => '' ];
+            if ( ! empty( $attrs['link'] ) && ( $attrs['onclick'] ?? '' ) === 'custom_link' ) {
+                $settings['link_to'] = 'custom';
+                $settings['link']    = [
+                    'url'         => $attrs['link'],
+                    'is_external' => ( $attrs['img_link_target'] ?? '' ) === '_blank',
+                    'nofollow'    => false,
+                ];
+            }
+        }
+
         if ( isset( $attrs['align'] ) ) {
             $settings['align'] = $attrs['align'];
         }
