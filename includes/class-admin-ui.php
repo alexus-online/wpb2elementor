@@ -21,9 +21,10 @@ class WPB2EL_Admin_UI {
     }
 
     public function render_page(): void {
-        $pages   = $this->get_pages();
-        $api_key = get_option( 'wpb2el_api_key', '' );
-        $notice  = get_transient( 'wpb2el_notice' );
+        $pages             = $this->get_pages();
+        $api_key           = get_option( 'wpb2el_api_key', '' );
+        $notice            = get_transient( 'wpb2el_notice' );
+        $container_enabled = $this->is_container_enabled();
         if ( $notice ) delete_transient( 'wpb2el_notice' );
         ?>
         <div class="wrap wpb2el-wrap">
@@ -32,6 +33,16 @@ class WPB2EL_Admin_UI {
             <?php if ( $notice ) : ?>
                 <div class="wpb2el-notice <?php echo esc_attr( $notice['type'] ); ?>">
                     <?php echo esc_html( $notice['message'] ); ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if ( ! $container_enabled ) : ?>
+                <div class="wpb2el-notice error">
+                    ⚠️ <strong>Flexbox Container nicht aktiviert.</strong>
+                    Das Plugin konvertiert in das moderne Elementor Container-Format — dieses muss zuerst aktiviert werden.<br>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=elementor#tab-experiments' ) ); ?>" class="button button-primary" style="margin-top:8px">
+                        Elementor Experimente öffnen → "Flexbox Container" aktivieren
+                    </a>
                 </div>
             <?php endif; ?>
 
@@ -54,11 +65,13 @@ class WPB2EL_Admin_UI {
             </form>
 
             <h2>Seiten</h2>
+            <?php if ( $container_enabled ) : ?>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <input type="hidden" name="action" value="wpb2el_convert_all">
                 <?php wp_nonce_field( 'wpb2el_convert_all' ); ?>
                 <?php submit_button( 'Alle konvertieren', 'secondary', 'submit', false ); ?>
             </form>
+            <?php endif; ?>
 
             <table class="wp-list-table widefat fixed striped">
                 <thead><tr><th>Seite</th><th>Status</th><th>Aktion</th></tr></thead>
@@ -83,12 +96,16 @@ class WPB2EL_Admin_UI {
                                 <button type="submit" class="button button-secondary" onclick="return confirm('Kopie löschen?')">Zurücksetzen</button>
                             </form>
                         <?php else : ?>
+                        <?php if ( $container_enabled ) : ?>
                         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                             <input type="hidden" name="action" value="wpb2el_convert">
                             <input type="hidden" name="page_id" value="<?php echo esc_attr( $page['id'] ); ?>">
                             <?php wp_nonce_field( 'wpb2el_convert_' . $page['id'] ); ?>
                             <button type="submit" class="button button-primary">Konvertieren</button>
                         </form>
+                        <?php else : ?>
+                            <button class="button button-primary" disabled title="Flexbox Container erst aktivieren">Konvertieren</button>
+                        <?php endif; ?>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -206,8 +223,8 @@ class WPB2EL_Admin_UI {
             (int) get_option( 'woocommerce_myaccount_page_id' ),
         ] );
 
-        $posts    = get_posts( [ 'post_type' => 'page', 'numberposts' => -1, 'post_status' => 'any' ] );
-        $result   = [];
+        $posts  = get_posts( [ 'post_type' => 'page', 'numberposts' => -1, 'post_status' => 'any' ] );
+        $result = [];
         $copy_ids = [];
         foreach ( $posts as $post ) {
             $copy_id = (int) get_post_meta( $post->ID, '_wpb2el_copy_id', true );
@@ -225,5 +242,10 @@ class WPB2EL_Admin_UI {
             ];
         }
         return $result;
+    }
+
+    private function is_container_enabled(): bool {
+        $experiments = get_option( 'elementor_experiments', [] );
+        return isset( $experiments['container'] ) && $experiments['container'] === 'active';
     }
 }
