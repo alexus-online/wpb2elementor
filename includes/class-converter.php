@@ -75,7 +75,7 @@ class WPB2EL_Converter {
 
     private function build_settings( array $node, array $mapped ): array {
         $settings = [];
-        $attrs    = $node['attrs'];
+        $attrs    = $node['attrs'] ?? [];
 
         if ( $mapped['elType'] === 'column' && isset( $attrs['width'] ) ) {
             $settings['_column_size'] = $this->vc_width_to_percent( $attrs['width'] );
@@ -104,9 +104,11 @@ class WPB2EL_Converter {
     private function rebuild_shortcode( array $node ): string {
         $attrs = '';
         foreach ( $node['attrs'] as $k => $v ) {
-            $attrs .= " {$k}=\"{$v}\"";
+            $escaped = function_exists('esc_attr') ? esc_attr($v) : htmlspecialchars($v, ENT_QUOTES);
+            $attrs .= " {$k}=\"{$escaped}\"";
         }
-        return "[{$node['tag']}{$attrs}]{$node['content']}[/{$node['tag']}]";
+        $content = function_exists('esc_html') ? esc_html($node['content']) : htmlspecialchars($node['content'], ENT_QUOTES);
+        return "[{$node['tag']}{$attrs}]{$content}[/{$node['tag']}]";
     }
 
     private function vc_width_to_percent( string $vc_width ): int {
