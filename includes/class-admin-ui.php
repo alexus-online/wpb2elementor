@@ -89,6 +89,7 @@ class WPB2EL_Admin_UI {
                     <td class="wpb2el-actions">
                         <?php if ( $page['status'] === 'elementor' ) : ?>
                             <a href="<?php echo esc_url( admin_url( 'post.php?post=' . $page['copy_id'] . '&action=elementor' ) ); ?>" class="button button-primary" target="_blank">Mit Elementor bearbeiten</a>
+                            <a href="<?php echo esc_url( get_preview_post_link( $page['copy_id'] ) ); ?>" class="button button-secondary" target="_blank">Seite ansehen</a>
                             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                                 <input type="hidden" name="action" value="wpb2el_reset">
                                 <input type="hidden" name="page_id" value="<?php echo esc_attr( $page['id'] ); ?>">
