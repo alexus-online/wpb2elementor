@@ -18,6 +18,7 @@ require_once WPB2EL_PATH . 'includes/class-parser.php';
 require_once WPB2EL_PATH . 'includes/class-mapper.php';
 require_once WPB2EL_PATH . 'includes/class-converter.php';
 require_once WPB2EL_PATH . 'includes/class-claude-api.php';
+require_once WPB2EL_PATH . 'includes/class-prompt-export.php';
 require_once WPB2EL_PATH . 'includes/class-admin-ui.php';
 
 add_action( 'plugins_loaded', function() {
