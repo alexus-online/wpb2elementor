@@ -121,7 +121,7 @@ class WPB2EL_Admin_UI {
         check_admin_referer( 'wpb2el_settings' );
         update_option( 'wpb2el_api_key', sanitize_text_field( $_POST['wpb2el_api_key'] ?? '' ) );
         set_transient( 'wpb2el_notice', [ 'type' => 'success', 'message' => 'Einstellungen gespeichert.' ], 30 );
-        wp_redirect( admin_url( 'tools.php?page=wpb2elementor' ) );
+        wp_redirect( admin_url( 'admin.php?page=wpb2elementor' ) );
         exit;
     }
 
@@ -133,7 +133,7 @@ class WPB2EL_Admin_UI {
             'type'    => $result['success'] ? 'success' : 'error',
             'message' => $result['message'],
         ], 30 );
-        wp_redirect( admin_url( 'tools.php?page=wpb2elementor' ) );
+        wp_redirect( admin_url( 'admin.php?page=wpb2elementor' ) );
         exit;
     }
 
@@ -149,7 +149,7 @@ class WPB2EL_Admin_UI {
         $msg = "Konvertiert: {$count} Seiten.";
         if ( $errors ) $msg .= " Fehler: {$errors}.";
         set_transient( 'wpb2el_notice', [ 'type' => 'success', 'message' => $msg ], 30 );
-        wp_redirect( admin_url( 'tools.php?page=wpb2elementor' ) );
+        wp_redirect( admin_url( 'admin.php?page=wpb2elementor' ) );
         exit;
     }
 
@@ -164,7 +164,7 @@ class WPB2EL_Admin_UI {
             delete_post_meta( $page_id, '_wpb2el_copy_id' );
             set_transient( 'wpb2el_notice', [ 'type' => 'success', 'message' => 'Kopie gelöscht.' ], 30 );
         }
-        wp_redirect( admin_url( 'tools.php?page=wpb2elementor' ) );
+        wp_redirect( admin_url( 'admin.php?page=wpb2elementor' ) );
         exit;
     }
 
