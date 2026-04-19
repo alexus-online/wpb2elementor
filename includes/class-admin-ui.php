@@ -40,7 +40,7 @@ class WPB2EL_Admin_UI {
                 <div class="wpb2el-notice error">
                     ⚠️ <strong>Flexbox Container nicht aktiviert.</strong>
                     Das Plugin konvertiert in das moderne Elementor Container-Format — dieses muss zuerst aktiviert werden.<br>
-                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=elementor#tab-experiments' ) ); ?>" class="button button-primary" style="margin-top:8px">
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=elementor-settings#tab-experiments' ) ); ?>" class="button button-primary" style="margin-top:8px">
                         Elementor Experimente öffnen → "Flexbox Container" aktivieren
                     </a>
                 </div>
