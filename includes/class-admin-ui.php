@@ -74,7 +74,9 @@ class WPB2EL_Admin_UI {
                         <?php endif; ?>
                     </td>
                     <td class="wpb2el-actions">
-                        <?php if ( $page['status'] !== 'elementor' ) : ?>
+                        <?php if ( $page['status'] === 'elementor' ) : ?>
+                            <a href="<?php echo esc_url( admin_url( 'post.php?post=' . $page['id'] . '&action=elementor' ) ); ?>" class="button button-primary" target="_blank">Mit Elementor bearbeiten</a>
+                        <?php else : ?>
                         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                             <input type="hidden" name="action" value="wpb2el_convert">
                             <input type="hidden" name="page_id" value="<?php echo esc_attr( $page['id'] ); ?>">
