@@ -12,11 +12,11 @@ class WPB2EL_Admin_UI {
     }
 
     public function register_menu(): void {
-        add_management_page( 'WPB2Elementor', 'WPB2Elementor', 'manage_options', 'wpb2elementor', [ $this, 'render_page' ] );
+        add_menu_page( 'WPB2Elementor', 'WPB2Elementor', 'manage_options', 'wpb2elementor', [ $this, 'render_page' ], 'dashicons-migrate', 2 );
     }
 
     public function enqueue_assets( string $hook ): void {
-        if ( $hook !== 'tools_page_wpb2elementor' ) return;
+        if ( $hook !== 'toplevel_page_wpb2elementor' ) return;
         wp_enqueue_style( 'wpb2el-admin', WPB2EL_URL . 'assets/admin.css', [], WPB2EL_VERSION );
     }
 
