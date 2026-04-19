@@ -176,7 +176,9 @@ class WPB2EL_Admin_UI {
             update_post_meta( $page_id, '_elementor_data', wp_slash( wp_json_encode( $elements ) ) );
             update_post_meta( $page_id, '_elementor_edit_mode', 'builder' );
             update_post_meta( $page_id, '_elementor_version', '3.0.0' );
-            wp_update_post( [ 'ID' => $page_id, 'post_content' => '' ] );
+            global $wpdb;
+            $wpdb->update( $wpdb->posts, [ 'post_content' => '' ], [ 'ID' => $page_id ] );
+            clean_post_cache( $page_id );
 
             $msg = "✅ {$post->post_title} konvertiert.";
             if ( $exporter->has_items() ) {
