@@ -123,6 +123,52 @@ class WPB2EL_Converter {
             $settings['align'] = $attrs['align'];
         }
 
+        // Theme button shortcode: [button btntext="..." btnlink="..."]
+        if ( $node['tag'] === 'button' ) {
+            if ( isset( $attrs['btntext'] ) ) $settings['text'] = $attrs['btntext'];
+            if ( isset( $attrs['btnlink'] ) ) {
+                $settings['link'] = [ 'url' => $attrs['btnlink'], 'is_external' => false, 'nofollow' => false ];
+            }
+        }
+
+        // [button2 linkbox="url:URL-encoded|title:URL-encoded||"]
+        if ( $node['tag'] === 'button2' && isset( $attrs['linkbox'] ) ) {
+            $parts = explode( '|', $attrs['linkbox'] );
+            $lb    = [];
+            foreach ( $parts as $part ) {
+                if ( strpos( $part, ':' ) !== false ) {
+                    [ $k, $v ] = explode( ':', $part, 2 );
+                    $lb[ $k ] = urldecode( $v );
+                }
+            }
+            if ( ! empty( $lb['title'] ) ) $settings['text'] = $lb['title'];
+            if ( ! empty( $lb['url'] ) )   $settings['link'] = [ 'url' => $lb['url'], 'is_external' => false, 'nofollow' => false ];
+        }
+
+        // [su_button url="..." background="#..."]content[/su_button]
+        if ( $node['tag'] === 'su_button' ) {
+            if ( isset( $attrs['url'] ) ) $settings['link'] = [ 'url' => $attrs['url'], 'is_external' => false, 'nofollow' => false ];
+            if ( isset( $attrs['background'] ) ) $settings['button_background_color'] = $attrs['background'];
+        }
+
+        // [heading text="..." tag="h2" align="center"]
+        if ( $node['tag'] === 'heading' ) {
+            $settings['title'] = $attrs['text'] ?? '';
+            if ( isset( $attrs['tag'] ) ) $settings['header_size'] = $attrs['tag'];
+            if ( isset( $attrs['align'] ) ) $settings['align'] = $attrs['align'];
+        }
+
+        // [su_spacer size="40"]
+        if ( $node['tag'] === 'su_spacer' && isset( $attrs['size'] ) ) {
+            $settings['space'] = [ 'unit' => 'px', 'size' => (int) $attrs['size'], 'sizes' => [] ];
+        }
+
+        // [audio mp3="URL"][/audio] → HTML widget
+        if ( $node['tag'] === 'audio' && isset( $attrs['mp3'] ) ) {
+            $src = esc_url( $attrs['mp3'] );
+            $settings['html'] = "<audio src=\"{$src}\" controls></audio>";
+        }
+
         return $settings;
     }
 

@@ -25,6 +25,14 @@ class WPB2EL_Mapper {
         'vc_progress_bar'    => [ 'elType' => 'widget', 'widgetType' => 'progress' ],
         'vc_cta'             => [ 'elType' => 'widget', 'widgetType' => 'button' ],
         'vc_text_separator'  => [ 'elType' => 'widget', 'widgetType' => 'heading' ],
+        // Theme/plugin shortcodes
+        'button'             => [ 'elType' => 'widget', 'widgetType' => 'button' ],
+        'button2'            => [ 'elType' => 'widget', 'widgetType' => 'button' ],
+        'su_button'          => [ 'elType' => 'widget', 'widgetType' => 'button' ],
+        'heading'            => [ 'elType' => 'widget', 'widgetType' => 'heading' ],
+        'line_solid'         => [ 'elType' => 'widget', 'widgetType' => 'divider' ],
+        'su_spacer'          => [ 'elType' => 'widget', 'widgetType' => 'spacer' ],
+        'audio'              => [ 'elType' => 'widget', 'widgetType' => 'html' ],
     ];
 
     public function map( string $tag ): array {

@@ -7,6 +7,8 @@ class WPB2EL_Parser {
         'vc_single_image', 'vc_text_separator', 'vc_separator',
         'vc_empty_space', 'vc_btn', 'vc_video', 'vc_icon',
         'vc_progress_bar', 'vc_custom_heading',
+        // Theme/plugin self-closing shortcodes
+        'button', 'button2', 'heading', 'line_solid', 'su_spacer',
     ];
 
     public function parse( string $content ): array {
