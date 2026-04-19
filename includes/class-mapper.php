@@ -3,10 +3,10 @@
 class WPB2EL_Mapper {
 
     private static array $map = [
-        'vc_row'             => [ 'elType' => 'section' ],
-        'vc_row_inner'       => [ 'elType' => 'section' ],
-        'vc_column'          => [ 'elType' => 'column' ],
-        'vc_column_inner'    => [ 'elType' => 'column' ],
+        'vc_row'             => [ 'elType' => 'container', 'isInner' => false ],
+        'vc_row_inner'       => [ 'elType' => 'container', 'isInner' => true ],
+        'vc_column'          => [ 'elType' => 'container', 'isInner' => true ],
+        'vc_column_inner'    => [ 'elType' => 'container', 'isInner' => true ],
         'vc_column_text'     => [ 'elType' => 'widget', 'widgetType' => 'text-editor' ],
         'vc_custom_heading'  => [ 'elType' => 'widget', 'widgetType' => 'heading' ],
         'vc_single_image'    => [ 'elType' => 'widget', 'widgetType' => 'image' ],

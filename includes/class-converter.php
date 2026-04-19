@@ -29,7 +29,6 @@ class WPB2EL_Converter {
         $mapped = $this->mapper->map( $node['tag'] );
         $id     = $this->generate_id();
 
-        // Unknown widget: try Claude API, then fallback to placeholder
         if ( ! $mapped['known'] ) {
             if ( $this->claude ) {
                 $claude_el = $this->claude->convert_node( $node );
@@ -61,6 +60,10 @@ class WPB2EL_Converter {
             $el['widgetType'] = $mapped['widgetType'];
         }
 
+        if ( $mapped['elType'] === 'container' ) {
+            $el['isInner'] = $mapped['isInner'] ?? false;
+        }
+
         foreach ( $node['children'] as $child ) {
             $child_el = $this->convert_node( $child );
             if ( $child_el ) $el['elements'][] = $child_el;
@@ -77,12 +80,27 @@ class WPB2EL_Converter {
         $settings = [];
         $attrs    = $node['attrs'] ?? [];
 
-        if ( $mapped['elType'] === 'column' && isset( $attrs['width'] ) ) {
-            $settings['_column_size'] = $this->vc_width_to_percent( $attrs['width'] );
+        if ( $mapped['elType'] === 'container' ) {
+            $is_inner = $mapped['isInner'] ?? false;
+            if ( ! $is_inner ) {
+                // Outer container (replaces vc_row): horizontal flex row
+                $settings['flex_direction']  = 'row';
+                $settings['content_width']   = 'full';
+                $settings['flex_wrap']       = 'nowrap';
+                $settings['align_items']     = 'stretch';
+            } else {
+                // Inner container (replaces vc_column): vertical flex column
+                $settings['flex_direction'] = 'column';
+                if ( isset( $attrs['width'] ) ) {
+                    $pct = $this->vc_width_to_percent( $attrs['width'] );
+                    $settings['width'] = [ 'unit' => '%', 'size' => $pct, 'sizes' => [] ];
+                }
+            }
+            if ( isset( $attrs['css'] ) && preg_match( '/background(?:-color)?:\s*(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\))/', $attrs['css'], $m ) ) {
+                $settings['background_color'] = $m[1];
+            }
         }
-        if ( isset( $attrs['css'] ) && preg_match( '/background(?:-color)?:\s*(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\))/', $attrs['css'], $m ) ) {
-            $settings['background_color'] = $m[1];
-        }
+
         if ( ( $mapped['widgetType'] ?? '' ) === 'heading' && isset( $attrs['text'] ) ) {
             $settings['title'] = $attrs['text'];
         }
@@ -104,16 +122,16 @@ class WPB2EL_Converter {
     private function rebuild_shortcode( array $node ): string {
         $attrs = '';
         foreach ( $node['attrs'] as $k => $v ) {
-            $escaped = function_exists('esc_attr') ? esc_attr($v) : htmlspecialchars($v, ENT_QUOTES);
+            $escaped = function_exists( 'esc_attr' ) ? esc_attr( $v ) : htmlspecialchars( $v, ENT_QUOTES );
             $attrs .= " {$k}=\"{$escaped}\"";
         }
-        $content = function_exists('esc_html') ? esc_html($node['content']) : htmlspecialchars($node['content'], ENT_QUOTES);
+        $content = function_exists( 'esc_html' ) ? esc_html( $node['content'] ) : htmlspecialchars( $node['content'], ENT_QUOTES );
         return "[{$node['tag']}{$attrs}]{$content}[/{$node['tag']}]";
     }
 
     private function vc_width_to_percent( string $vc_width ): int {
-        $map = [ '1/1'=>100,'1/2'=>50,'1/3'=>33,'2/3'=>67,'1/4'=>25,'3/4'=>75,'1/6'=>17,'5/6'=>83 ];
-        return $map[$vc_width] ?? 100;
+        $map = [ '1/1' => 100, '1/2' => 50, '1/3' => 33, '2/3' => 67, '1/4' => 25, '3/4' => 75, '1/6' => 17, '5/6' => 83 ];
+        return $map[ $vc_width ] ?? 100;
     }
 
     private function generate_id(): string {
