@@ -63,13 +63,34 @@ class WPB2EL_Parser {
             }
         }
 
+        // Flush any unclosed frames to result
+        while ( count( $stack ) > 1 ) {
+            $frame = array_pop( $stack );
+            $top   = array_pop( $stack );
+            if ( ! is_array( $top ) ) $top = [];
+            if ( isset( $frame['node'] ) ) {
+                $frame['node']['children'] = [];
+                $top[] = $frame['node'];
+            } elseif ( is_array( $frame ) ) {
+                $top = array_merge( $top, array_values( $frame ) );
+            }
+            array_push( $stack, $top );
+        }
+
+        // Return result, plus any remaining unclosed nodes from the stack
+        if ( ! empty( $stack ) && isset( $stack[0]['tag'] ) ) {
+            $result[] = $stack[0];
+        }
         return $result;
     }
 
     private function parse_attrs( string $attr_string ): array {
         $attrs = [];
-        preg_match_all( '/(\w+)=["\']([^"\']*)["\']/', $attr_string, $matches, PREG_SET_ORDER );
-        foreach ( $matches as $m ) { $attrs[$m[1]] = $m[2]; }
+        // Match name="value", name='value', or name=value (unquoted)
+        preg_match_all( '/(\w+)=(?:"([^"]*)"|\'([^\']*)\'|(\S+))/', $attr_string, $matches, PREG_SET_ORDER );
+        foreach ( $matches as $m ) {
+            $attrs[ $m[1] ] = $m[2] !== '' ? $m[2] : ( $m[3] !== '' ? $m[3] : $m[4] );
+        }
         return $attrs;
     }
 }
