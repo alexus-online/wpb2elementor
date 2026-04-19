@@ -6,7 +6,7 @@ class WPB2EL_Parser {
     private static array $self_closing = [
         'vc_single_image', 'vc_text_separator', 'vc_separator',
         'vc_empty_space', 'vc_btn', 'vc_video', 'vc_icon',
-        'vc_progress_bar', 'vc_cta',
+        'vc_progress_bar', 'vc_custom_heading',
     ];
 
     public function parse( string $content ): array {
