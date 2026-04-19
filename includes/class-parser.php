@@ -9,6 +9,8 @@ class WPB2EL_Parser {
         'vc_progress_bar', 'vc_custom_heading',
         // Theme/plugin self-closing shortcodes
         'button', 'button2', 'heading', 'line_solid', 'su_spacer',
+        // Third-party self-closing shortcodes
+        'rev_slider', 'rev_slider_vc', 'testslide', 'process', 'foliof',
     ];
 
     public function parse( string $content ): array {
@@ -115,7 +117,7 @@ class WPB2EL_Parser {
         $attrs = [];
         preg_match_all( '/(\w+)=(?:"([^"]*)"|\'([^\']*)\'|(\S+))/', $attr_string, $matches, PREG_SET_ORDER );
         foreach ( $matches as $m ) {
-            $attrs[ $m[1] ] = $m[2] !== '' ? $m[2] : ( $m[3] !== '' ? $m[3] : $m[4] );
+            $attrs[ $m[1] ] = $m[2] !== '' ? $m[2] : ( $m[3] !== '' ? $m[3] : ( $m[4] ?? '' ) );
         }
         return $attrs;
     }

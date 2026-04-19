@@ -24,7 +24,17 @@ class WPB2EL_Converter {
     }
 
     private function convert_node( array $node ): ?array {
-        if ( $node['tag'] === '__text__' ) return null;
+        if ( $node['tag'] === '__text__' ) {
+            $content = trim( $node['content'] );
+            if ( $content === '' ) return null;
+            return [
+                'id'         => $this->generate_id(),
+                'elType'     => 'widget',
+                'widgetType' => 'text-editor',
+                'settings'   => [ 'editor' => $content ],
+                'elements'   => [],
+            ];
+        }
 
         $mapped = $this->mapper->map( $node['tag'] );
         $id     = $this->generate_id();
