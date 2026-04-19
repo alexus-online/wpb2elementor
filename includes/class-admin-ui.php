@@ -246,6 +246,7 @@ class WPB2EL_Admin_UI {
 
     private function is_container_enabled(): bool {
         $experiments = get_option( 'elementor_experiments', [] );
-        return isset( $experiments['container'] ) && $experiments['container'] === 'active';
+        $state = $experiments['container'] ?? 'default';
+        return $state !== 'inactive';
     }
 }
